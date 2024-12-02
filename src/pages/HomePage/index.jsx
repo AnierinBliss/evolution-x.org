@@ -19,7 +19,7 @@ const HomePage = () => {
 
   const fetchSS = async () => {
     const url =
-      "https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/udc/screenshots/screenshots.json"
+      "https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/screenshots/screenshots.json"
     try {
       const response = await fetch(url)
       const fetchedSS = await response.json()
@@ -175,7 +175,7 @@ const HomePage = () => {
                   viewport={{ once: true }}
                 >
                   <img
-                    src={`https://github.com/Evolution-X/www_gitres/blob/udc/screenshots/${ss}?raw=true`}
+                    src={`https://github.com/Evolution-X/www_gitres/blob/main/screenshots/${ss}?raw=true`}
                     alt=""
                   />
                 </motion.div>

@@ -18,7 +18,7 @@ export default function Blog() {
   // Fetch the list of devices
   const fetchBlogIds = async () => {
     const url =
-      "https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/udc/blogs/blogs.json"
+      "https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/blogs/blogs.json"
 
     try {
       const response = await fetch(url)
@@ -36,7 +36,7 @@ export default function Blog() {
     // Wait for all device data to be fetched
     const data = await Promise.all(
       blogIds.map(async (blog) => {
-        const durl = `https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/udc/blogs/${blog}.json`
+        const durl = `https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/blogs/${blog}.json`
         try {
           const fetchedBlog = await fetch(durl)
           const fetchedBlogData = await fetchedBlog.json()

@@ -6,7 +6,7 @@ const FlashingInstructions = (props) => {
 
   const fetchInstructions = async () => {
     const codename = props.codename
-    const url = `https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/udc/devices/instructions/${codename}.md`
+    const url = `https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/devices/instructions/${codename}.md`
     try {
       const logs = await fetch(url)
       const data = await logs.text()

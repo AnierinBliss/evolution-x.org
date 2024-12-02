@@ -13,7 +13,7 @@ const variants = {
 }
 
 const Downloads = () => {
-  const [devices, setDevices] = useState([])
+  const [devices, setDevices] = useState({})
   const [deviceList, setDeviceList] = useState([])
   const [loading, setLoading] = useState(true)
   const [oem, setOem] = useState(null)
@@ -32,14 +32,16 @@ const Downloads = () => {
   // Fetch devices list
   const fetchDevices = async () => {
     const url =
-      "https://raw.githubusercontent.com/Evolution-X/www_gitres/udc/devices/devices.json"
+      "https://raw.githubusercontent.com/Evolution-X/www_gitres/main/devices/devices.json"
 
     try {
       const response = await fetch(url)
-      return await response.json()
+      const devicesData = await response.json()
+      // Flatten the nested object into a list of devices
+      return devicesData
     } catch (error) {
       console.error("Error fetching devices:", error)
-      return [] // Return an empty array on error
+      return {} // Return an empty object on error
     }
   }
 
@@ -47,7 +49,7 @@ const Downloads = () => {
   const fetchDeviceData = async (basePath) => {
     try {
       const data = await Promise.all(
-        devices.map(async (device) => {
+        Object.keys(devices).map(async (device) => {
           const deviceUrl = `${basePath}/${device}.json`
           try {
             const response = await fetch(deviceUrl)
@@ -78,7 +80,7 @@ const Downloads = () => {
   // Fetch device data when devices list is loaded
   useEffect(() => {
     const loadDeviceData = async () => {
-      if (devices.length > 0) {
+      if (Object.keys(devices).length > 0) {
         const basePath1 =
           "https://raw.githubusercontent.com/Evolution-X/OTA/udc/builds"
         const basePath2 =
@@ -109,7 +111,6 @@ const Downloads = () => {
           }, [])
           .sort((a, b) => b.data.timestamp - a.data.timestamp)
 
-        console.log(combinedList)
         setDeviceList(combinedList)
         setLoading(false)
       }
@@ -196,69 +197,74 @@ const Downloads = () => {
                       device.data?.device.toLowerCase()
                     ).includes(searchQuery.toLowerCase()),
                 )
-                .map((device, index) => (
-                  <motion.div
-                    variants={variants}
-                    initial={{ opacity: 0, scale: 0.75 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    key={index}
-                  >
-                    <div className="relative flex min-h-full w-[23rem] flex-col justify-between rounded-2xl border border-slate-800 bg-black pb-7 duration-100 ease-in lg:hover:scale-105">
-                      <img
-                        className="mx-auto my-4 flex size-56 object-contain"
-                        src={`https://github.com/Evolution-X/www_gitres/blob/udc/devices/images/${device.codename}.png?raw=true`}
-                        alt=""
-                      />
-                      {device.data?.version === "10.0" && (
-                        <motion.img
-                          initial={{ scale: 0.8, rotate: -5 }}
-                          animate={{ scale: 0.9, rotate: 5 }}
-                          transition={{
-                            repeat: Infinity,
-                            repeatType: "mirror",
-                            duration: 0.7,
-                            type: "spring",
-                            damping: 5,
-                            stiffness: 30,
-                          }}
-                          viewport={{ once: true }}
-                          src={star}
+                .map((device, index) => {
+                  // Check if 'vic' is in the supported branches for this device
+                  const isVicSupported = devices[device.codename]?.includes("vic")
+
+                  return (
+                    <motion.div
+                      variants={variants}
+                      initial={{ opacity: 0, scale: 0.75 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      key={index}
+                    >
+                      <div className="relative flex min-h-full w-[23rem] flex-col justify-between rounded-2xl border border-slate-800 bg-black pb-7 duration-100 ease-in lg:hover:scale-105">
+                        <img
+                          className="mx-auto my-4 flex size-56 object-contain"
+                          src={`https://github.com/Evolution-X/www_gitres/blob/main/devices/images/${device.codename}.png?raw=true`}
                           alt=""
-                          className="absolute right-[-20px] top-[-30px] size-20 sm:right-[-30px]"
                         />
-                      )}
-                      <div className="flex flex-col gap-6 px-7">
-                        <div>
-                          <p className="lg:text-md flex items-end justify-between text-sm text-[#999999]">
-                            Device{" "}
-                            <span className="ml-8 inline-flex h-5 items-center justify-center rounded-3xl bg-[#232323] p-4">
-                              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent lg:text-lg">
-                                {device.codename}
+                        {isVicSupported && (
+                          <motion.img
+                            initial={{ scale: 0.8, rotate: -5 }}
+                            animate={{ scale: 0.9, rotate: 5 }}
+                            transition={{
+                              repeat: Infinity,
+                              repeatType: "mirror",
+                              duration: 0.7,
+                              type: "spring",
+                              damping: 5,
+                              stiffness: 30,
+                            }}
+                            viewport={{ once: true }}
+                            src={star}
+                            alt=""
+                            className="absolute right-[-20px] top-[-30px] size-20 sm:right-[-30px]"
+                          />
+                        )}
+                        <div className="flex flex-col gap-6 px-7">
+                          <div>
+                            <p className="lg:text-md flex items-end justify-between text-sm text-[#999999]">
+                              Device{" "}
+                              <span className="ml-8 inline-flex h-5 items-center justify-center rounded-3xl bg-[#232323] p-4">
+                                <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent lg:text-lg">
+                                  {device.codename}
+                                </span>
                               </span>
-                            </span>
-                          </p>
-                          <p className="mt-0 font-[Prod-Medium] text-xl text-white lg:text-2xl">
-                            {device.data?.device}
-                          </p>
+                            </p>
+                            <p className="mt-0 font-[Prod-Medium] text-xl text-white lg:text-2xl">
+                              {device.data?.device}
+                            </p>
+                          </div>
+                          <div className="inline-flex flex-col items-start justify-start">
+                            <p className="lg:text-md text-sm text-[#999999]">
+                              Maintainer
+                            </p>
+                            <p className="font-[Prod-Medium] text-lg text-white lg:text-2xl">
+                              {device.data?.maintainer}
+                            </p>
+                          </div>
+                          <Link
+                            to={`/downloads/${device.codename}`}
+                            className="inline-flex h-16 items-center justify-center rounded-full bg-[#5b60e3] text-xl text-white"
+                          >
+                            Get Evolution X
+                          </Link>
                         </div>
-                        <div className="inline-flex flex-col items-start justify-start">
-                          <p className="lg:text-md text-sm text-[#999999]">
-                            Maintainer
-                          </p>
-                          <p className="font-[Prod-Medium] text-lg text-white lg:text-2xl">
-                            {device.data?.maintainer}
-                          </p>
-                        </div>
-                        <Link
-                          to={`/downloads/${device.codename}`}
-                          className="inline-flex h-16 items-center justify-center rounded-full bg-[#5b60e3] text-xl text-white"
-                        >
-                          Get Evolution X
-                        </Link>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  )
+                })}
           </motion.div>
         </div>
       )}
