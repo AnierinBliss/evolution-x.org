@@ -67,6 +67,11 @@ export default function Navbar() {
             wiki
           </Link>
         </li>
+        <li>
+          <NavLink to={"/merch"} onClick={closeMenu}>
+            merch
+          </NavLink>
+        </li>
       </ul>
     </div>
   )
