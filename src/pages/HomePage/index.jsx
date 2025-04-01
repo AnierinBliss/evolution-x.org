@@ -131,7 +131,7 @@ const HomePage = () => {
                   </p>
                   <div className="relative flex justify-center lg:w-60">
                     <img
-                      src={`https://github.com/Evolution-X/www_gitres/blob/main/version/androidversion.png?raw=true`}
+                      src={`https://github.com/Evolution-X/www_gitres/blob/main/version/androidversion.webp?raw=true`}
                       alt=""
                       className="z-40 size-[12rem] sm:size-[10rem] lg:size-[12rem]"
                     />
