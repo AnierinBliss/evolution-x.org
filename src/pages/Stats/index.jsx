@@ -1,12 +1,12 @@
-import { motion } from "framer-motion"
-import React, { useEffect, useState } from "react"
-import evoloading from "../../assets/evoloading.gif"
-import evolution from "../../assets/evolution.svg"
-import { toWords } from "number-to-words"
+import { motion } from 'framer-motion'
+import React, { useEffect, useState } from 'react'
+import evoloading from '../../assets/evoloading.gif'
+import evolution from '../../assets/evolution.svg'
+import { toWords } from 'number-to-words'
 
 const variants = {
   hidden: { opacity: 0, y: 75, transition: { delay: 0.2 } },
-  visible: { opacity: 1, y: 0, transition: { delay: 0.2 } },
+  visible: { opacity: 1, y: 0, transition: { delay: 0.2 } }
 }
 
 const Stats = () => {
@@ -18,7 +18,7 @@ const Stats = () => {
 
   useEffect(() => {
     const fetchStats = async (period, setData) => {
-      const endDate = new Date().toISOString().split("T")[0]
+      const endDate = new Date().toISOString().split('T')[0]
       const url = `https://sourceforge.net/projects/evolution-x/files/stats/json?start_date=2019-03-19&end_date=${endDate}&period=${period}`
 
       try {
@@ -36,12 +36,12 @@ const Stats = () => {
       setLoading(true)
       try {
         await Promise.all([
-          fetchStats("daily", setDailyStatsData),
-          fetchStats("weekly", setWeeklyStatsData),
-          fetchStats("monthly", setMonthlyStatsData),
+          fetchStats('daily', setDailyStatsData),
+          fetchStats('weekly', setWeeklyStatsData),
+          fetchStats('monthly', setMonthlyStatsData)
         ])
       } catch (err) {
-        console.error("Error in fetching data:", err)
+        console.error('Error in fetching data:', err)
       } finally {
         setLoading(false)
       }
@@ -53,23 +53,23 @@ const Stats = () => {
   const formatDate = (dateString, withTime = false, showDay = true) => {
     const date = new Date(dateString)
     const options = {
-      year: "numeric",
-      month: "long",
-      ...(showDay && { day: "numeric", weekday: "long" }),
+      year: 'numeric',
+      month: 'long',
+      ...(showDay && { day: 'numeric', weekday: 'long' }),
       ...(withTime && {
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        hour12: true,
-      }),
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true
+      })
     }
-    return date.toLocaleString("en-US", options)
+    return date.toLocaleString('en-US', options)
   }
 
   const getMostDownloads = (downloads) => {
     if (!downloads?.length) return null
     return downloads.reduce((max, current) =>
-      current[1] > max[1] ? current : max,
+      current[1] > max[1] ? current : max
     )
   }
 
@@ -79,11 +79,11 @@ const Stats = () => {
     return getMostDownloads(
       Object.entries(
         monthlyStatsData.reduce((acc, [month, downloads]) => {
-          const year = month.split("-")[0]
+          const year = month.split('-')[0]
           acc[year] = (acc[year] || 0) + downloads
           return acc
-        }, {}),
-      ).map(([year, totalDownloads]) => [year, totalDownloads]),
+        }, {})
+      ).map(([year, totalDownloads]) => [year, totalDownloads])
     )
   }
 
@@ -93,193 +93,193 @@ const Stats = () => {
   const mostDownloadsYear = getMostDownloadsYear(monthlyStatsData?.downloads)
 
   return loading ? (
-    <img className="mx-auto" src={evoloading} alt="Loading..." />
+    <img className='mx-auto' src={evoloading} alt='Loading...' />
   ) : error ? (
-    <div className="flex justify-center items-center min-h-screen">
-      <p className="text-red-500">{error}</p>
+    <div className='flex min-h-screen items-center justify-center'>
+      <p className='text-red-500'>{error}</p>
     </div>
   ) : (
     <motion.div
       variants={variants}
-      initial="hidden"
-      animate="visible"
-      className="mx-4 flex flex-col items-center justify-center gap-10 md:gap-20 lg:mx-16 xl:mx-auto xl:w-[64rem]"
+      initial='hidden'
+      animate='visible'
+      className='mx-4 flex flex-col items-center justify-center gap-10 md:gap-20 lg:mx-16 xl:mx-auto xl:w-[64rem]'
     >
-      <div className="inline-flex flex-col items-baseline gap-2 text-center font-[Prod-bold] text-4xl sm:flex-row sm:text-5xl lg:gap-4 lg:text-6xl">
-        <img className="h-7 sm:h-10 lg:h-12" src={evolution} alt="Logo" />
-        <span className="evoxhighlight">Stats</span>
+      <div className='inline-flex flex-col items-baseline gap-2 text-center font-[Prod-bold] text-4xl sm:flex-row sm:text-5xl lg:gap-4 lg:text-6xl'>
+        <img className='h-7 sm:h-10 lg:h-12' src={evolution} alt='Logo' />
+        <span className='evoxhighlight'>Stats</span>
       </div>
       {!loading &&
         !error &&
         dailyStatsData &&
         weeklyStatsData &&
         monthlyStatsData && (
-          <div className="text-white text-center space-y-12">
+          <div className='space-y-12 text-center text-white'>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl flex-1 border-2 border-[#0060ff]"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow flex-1 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">
+              <p className='evoxhighlight text-2xl font-semibold'>
                 Total Downloads
               </p>
-              <p className="text-lg mt-2">
-                In total, Evolution X has been downloaded{" "}
-                <span className="text-3xl font-bold evoxhighlight">
+              <p className='mt-2 text-lg'>
+                In total, Evolution X has been downloaded{' '}
+                <span className='evoxhighlight text-3xl font-bold'>
                   {dailyStatsData.total.toLocaleString()}
-                </span>{" "}
+                </span>{' '}
                 times!
               </p>
-              <p className="text-lg mt-2">
-                That's{" "}
-                <span className="text-lg mt-2 evoxhighlight">
+              <p className='mt-2 text-lg'>
+                That's{' '}
+                <span className='evoxhighlight mt-2 text-lg'>
                   {toWords(dailyStatsData.total)}
-                </span>{" "}
+                </span>{' '}
                 times!
               </p>
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl flex-1 border-2 border-[#0060ff]"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow flex-1 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">
+              <p className='evoxhighlight text-2xl font-semibold'>
                 Most Downloads in a Day
               </p>
-              <p className="text-lg mt-2">
-                On{" "}
-                <span className="evoxhighlight">
+              <p className='mt-2 text-lg'>
+                On{' '}
+                <span className='evoxhighlight'>
                   {formatDate(mostDownloadsDay[0], false)}
                 </span>
-                , we hit{" "}
-                <span className="text-3xl font-bold evoxhighlight">
+                , we hit{' '}
+                <span className='evoxhighlight text-3xl font-bold'>
                   {mostDownloadsDay[1].toLocaleString()}
-                </span>{" "}
+                </span>{' '}
                 downloads!
               </p>
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl flex-1 border-2 border-[#0060ff]"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow flex-1 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">
+              <p className='evoxhighlight text-2xl font-semibold'>
                 Most Downloads in a Week
               </p>
-              <p className="text-lg mt-2">
-                Starting on{" "}
-                <span className="evoxhighlight">
+              <p className='mt-2 text-lg'>
+                Starting on{' '}
+                <span className='evoxhighlight'>
                   {formatDate(mostDownloadsWeek[0], false)}
                 </span>
-                , we saw{" "}
-                <span className="text-3xl font-bold evoxhighlight">
+                , we saw{' '}
+                <span className='evoxhighlight text-3xl font-bold'>
                   {mostDownloadsWeek[1].toLocaleString()}
-                </span>{" "}
+                </span>{' '}
                 downloads over 7 days!
               </p>
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl flex-1 border-2 border-[#0060ff]"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow flex-1 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">
+              <p className='evoxhighlight text-2xl font-semibold'>
                 Most Downloads in a Month
               </p>
-              <p className="text-lg mt-2">
-                In{" "}
-                <span className="evoxhighlight">
+              <p className='mt-2 text-lg'>
+                In{' '}
+                <span className='evoxhighlight'>
                   {formatDate(mostDownloadsMonth[0], false, false)}
                 </span>
-                , we had{" "}
-                <span className="text-3xl font-bold evoxhighlight">
+                , we had{' '}
+                <span className='evoxhighlight text-3xl font-bold'>
                   {mostDownloadsMonth[1].toLocaleString()}
-                </span>{" "}
+                </span>{' '}
                 downloads!
               </p>
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl flex-1 border-2 border-[#0060ff]"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow flex-1 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">
+              <p className='evoxhighlight text-2xl font-semibold'>
                 Most Downloads in a Year
               </p>
-              <p className="text-lg mt-2">
-                In <span className="evoxhighlight">{mostDownloadsYear[0]}</span>
-                , we had{" "}
-                <span className="text-3xl font-bold evoxhighlight">
+              <p className='mt-2 text-lg'>
+                In <span className='evoxhighlight'>{mostDownloadsYear[0]}</span>
+                , we had{' '}
+                <span className='evoxhighlight text-3xl font-bold'>
                   {mostDownloadsYear[1].toLocaleString()}
-                </span>{" "}
+                </span>{' '}
                 downloads!
               </p>
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl flex-1 border-2 border-[#0060ff]"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow flex-1 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">
+              <p className='evoxhighlight text-2xl font-semibold'>
                 Top Country
               </p>
-              <p className="text-lg mt-2">
-                The country with the most downloads is{" "}
-                <span className="evoxhighlight">
+              <p className='mt-2 text-lg'>
+                The country with the most downloads is{' '}
+                <span className='evoxhighlight'>
                   {dailyStatsData.summaries.geo.top}
                 </span>
-                , accounting for{" "}
-                <span className="text-3xl font-bold evoxhighlight">
+                , accounting for{' '}
+                <span className='evoxhighlight text-3xl font-bold'>
                   {dailyStatsData.summaries.geo.percent}%
-                </span>{" "}
+                </span>{' '}
                 of total downloads!
               </p>
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl flex-1 border-2 border-[#0060ff]"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow flex-1 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">
+              <p className='evoxhighlight text-2xl font-semibold'>
                 Top Operating System
               </p>
-              <p className="text-lg mt-2">
-                The most used operating system for downloads is{" "}
-                <span className="evoxhighlight">
+              <p className='mt-2 text-lg'>
+                The most used operating system for downloads is{' '}
+                <span className='evoxhighlight'>
                   {dailyStatsData.summaries.os.top}
                 </span>
-                , accounting for{" "}
-                <span className="text-3xl font-bold evoxhighlight">
+                , accounting for{' '}
+                <span className='evoxhighlight text-3xl font-bold'>
                   {dailyStatsData.summaries.os.percent}%
-                </span>{" "}
+                </span>{' '}
                 of total downloads!
               </p>
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl border-2 border-[#0060ff]"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">Per Day</p>
-              <div className="mt-4 max-h-40 overflow-y-scroll">
-                <ul className="space-y-2">
+              <p className='evoxhighlight text-2xl font-semibold'>Per Day</p>
+              <div className='mt-4 max-h-40 overflow-y-scroll'>
+                <ul className='space-y-2'>
                   {[...dailyStatsData.downloads]
                     .sort((a, b) => new Date(b[0]) - new Date(a[0]))
                     .map(([date, count], index) => (
-                      <li key={index} className="text-lg">
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold evoxhighlight">
+                      <li key={index} className='text-lg'>
+                        <div className='flex items-center justify-between'>
+                          <span className='evoxhighlight font-semibold'>
                             {formatDate(date)}:
                           </span>
-                          <span className="ml-4">{count.toLocaleString()}</span>
+                          <span className='ml-4'>{count.toLocaleString()}</span>
                         </div>
                       </li>
                     ))}
@@ -288,13 +288,13 @@ const Stats = () => {
             </motion.div>
             <motion.div
               variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl border-2 border-[#0060ff] mt-8"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow mt-8 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">Per Week</p>
-              <div className="mt-4 max-h-40 overflow-y-scroll">
-                <ul className="space-y-2">
+              <p className='evoxhighlight text-2xl font-semibold'>Per Week</p>
+              <div className='mt-4 max-h-40 overflow-y-scroll'>
+                <ul className='space-y-2'>
                   {[...weeklyStatsData.downloads]
                     .sort((a, b) => new Date(a[0]) - new Date(b[0]))
                     .slice(0, -1)
@@ -305,20 +305,20 @@ const Stats = () => {
                       const formattedStart = formatDate(
                         start.toISOString(),
                         false,
-                        true,
+                        true
                       )
                       const formattedEnd = formatDate(
                         end.toISOString(),
                         false,
-                        true,
+                        true
                       )
                       return (
-                        <li key={index} className="text-lg">
-                          <div className="flex justify-between items-center">
-                            <span className="font-semibold evoxhighlight">
+                        <li key={index} className='text-lg'>
+                          <div className='flex items-center justify-between'>
+                            <span className='evoxhighlight font-semibold'>
                               {`${formattedStart} - ${formattedEnd}`}:
                             </span>
-                            <span className="ml-4">
+                            <span className='ml-4'>
                               {count.toLocaleString()}
                             </span>
                           </div>
@@ -331,22 +331,22 @@ const Stats = () => {
             </motion.div>
             <motion.div
               variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl border-2 border-[#0060ff] mt-8"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow mt-8 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">Per Month</p>
-              <div className="mt-4 max-h-40 overflow-y-scroll">
-                <ul className="space-y-2">
+              <p className='evoxhighlight text-2xl font-semibold'>Per Month</p>
+              <div className='mt-4 max-h-40 overflow-y-scroll'>
+                <ul className='space-y-2'>
                   {[...monthlyStatsData.downloads]
                     .sort((a, b) => new Date(b[0]) - new Date(a[0]))
                     .map(([date, count], index) => (
-                      <li key={index} className="text-lg">
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold evoxhighlight">
+                      <li key={index} className='text-lg'>
+                        <div className='flex items-center justify-between'>
+                          <span className='evoxhighlight font-semibold'>
                             {formatDate(date, false, false)}:
                           </span>
-                          <span className="ml-4">{count.toLocaleString()}</span>
+                          <span className='ml-4'>{count.toLocaleString()}</span>
                         </div>
                       </li>
                     ))}
@@ -355,29 +355,29 @@ const Stats = () => {
             </motion.div>
             <motion.div
               variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl border-2 border-[#0060ff] mt-8"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow mt-8 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">Per Year</p>
-              <div className="mt-4 max-h-40 overflow-y-scroll">
-                <ul className="space-y-2">
+              <p className='evoxhighlight text-2xl font-semibold'>Per Year</p>
+              <div className='mt-4 max-h-40 overflow-y-scroll'>
+                <ul className='space-y-2'>
                   {Object.entries(
                     monthlyStatsData.downloads.reduce((acc, [month, count]) => {
-                      const year = month.split("-")[0]
+                      const year = month.split('-')[0]
                       if (!acc[year]) acc[year] = 0
                       acc[year] += count
                       return acc
-                    }, {}),
+                    }, {})
                   )
                     .sort((a, b) => b[0] - a[0])
                     .map(([year, count], index) => (
-                      <li key={index} className="text-lg">
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold evoxhighlight">
+                      <li key={index} className='text-lg'>
+                        <div className='flex items-center justify-between'>
+                          <span className='evoxhighlight font-semibold'>
                             {year}:
                           </span>
-                          <span className="ml-4">{count.toLocaleString()}</span>
+                          <span className='ml-4'>{count.toLocaleString()}</span>
                         </div>
                       </li>
                     ))}
@@ -386,45 +386,45 @@ const Stats = () => {
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl flex-1 border-2 border-[#0060ff]"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow flex-1 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">Countries</p>
-              <div className="mt-4 max-h-40 overflow-y-scroll">
-                <ul className="space-y-2">
+              <p className='evoxhighlight text-2xl font-semibold'>Countries</p>
+              <div className='mt-4 max-h-40 overflow-y-scroll'>
+                <ul className='space-y-2'>
                   {dailyStatsData.countries.map(
                     ([country, downloads], index) => (
-                      <li key={index} className="flex justify-between">
-                        <span className="text-lg font-semibold evoxhighlight">
+                      <li key={index} className='flex justify-between'>
+                        <span className='evoxhighlight text-lg font-semibold'>
                           {country}:
                         </span>
-                        <span className="text-lg mt-1">
+                        <span className='mt-1 text-lg'>
                           {downloads.toLocaleString()}
                         </span>
                       </li>
-                    ),
+                    )
                   )}
                 </ul>
               </div>
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl flex-1 border-2 border-[#0060ff]"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow flex-1 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">
+              <p className='evoxhighlight text-2xl font-semibold'>
                 Operating Systems
               </p>
-              <div className="mt-4 max-h-40 overflow-y-scroll">
-                <ul className="space-y-2">
+              <div className='mt-4 max-h-40 overflow-y-scroll'>
+                <ul className='space-y-2'>
                   {dailyStatsData.oses.map(([os, downloads], index) => (
-                    <li key={index} className="flex justify-between">
-                      <span className="text-lg font-semibold evoxhighlight">
+                    <li key={index} className='flex justify-between'>
+                      <span className='evoxhighlight text-lg font-semibold'>
                         {os}:
                       </span>
-                      <span className="text-lg mt-1">
+                      <span className='mt-1 text-lg'>
                         {downloads.toLocaleString()}
                       </span>
                     </li>
@@ -434,42 +434,42 @@ const Stats = () => {
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="middleshadow bg-black p-6 rounded-xl border-2 border-[#0060ff] mt-8"
+              initial='hidden'
+              animate='visible'
+              className='middleshadow mt-8 rounded-xl border-2 border-[#0060ff] bg-black p-6'
             >
-              <p className="text-2xl font-semibold evoxhighlight">
+              <p className='evoxhighlight text-2xl font-semibold'>
                 Operating Systems by Country
               </p>
-              <div className="mt-4 max-h-40 overflow-y-scroll">
-                <ul className="space-y-2">
+              <div className='mt-4 max-h-40 overflow-y-scroll'>
+                <ul className='space-y-2'>
                   {Object.entries(dailyStatsData.oses_by_country)
                     .sort(([a], [b]) =>
-                      a.localeCompare(b, undefined, { sensitivity: "base" }),
+                      a.localeCompare(b, undefined, { sensitivity: 'base' })
                     )
                     .map(([country, oses], index) => (
-                      <li key={index} className="text-lg">
-                        <div className="flex justify-center">
-                          <span className="font-semibold evoxhighlight">
+                      <li key={index} className='text-lg'>
+                        <div className='flex justify-center'>
+                          <span className='evoxhighlight font-semibold'>
                             {country}
                           </span>
                         </div>
-                        <div className="space-y-2 mt-2">
+                        <div className='mt-2 space-y-2'>
                           {Object.entries(oses)
                             .sort(([a], [b]) =>
                               a.localeCompare(b, undefined, {
-                                sensitivity: "base",
-                              }),
+                                sensitivity: 'base'
+                              })
                             )
                             .map(([os, count], idx) => (
                               <div
                                 key={idx}
-                                className="flex justify-between items-center"
+                                className='flex items-center justify-between'
                               >
-                                <span className="font-semibold text-left w-1/2 evoxhighlight">
+                                <span className='evoxhighlight w-1/2 text-left font-semibold'>
                                   {os}:
                                 </span>
-                                <span className="ml-4 w-1/2 text-right">
+                                <span className='ml-4 w-1/2 text-right'>
                                   {count.toLocaleString()}
                                 </span>
                               </div>
@@ -482,35 +482,35 @@ const Stats = () => {
             </motion.div>
             <motion.div
               variants={variants}
-              initial="hidden"
-              animate="visible"
-              className="mt-8 text-sm text-gray-400 text-center"
+              initial='hidden'
+              animate='visible'
+              className='mt-8 text-center text-sm text-gray-400'
             >
               <p>
-                Download statistics are provided by{" "}
+                Download statistics are provided by{' '}
                 <a
-                  href="https://sourceforge.net/projects/evolution-x/"
-                  className="evoxhighlight"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href='https://sourceforge.net/projects/evolution-x/'
+                  className='evoxhighlight'
+                  target='_blank'
+                  rel='noopener noreferrer'
                 >
                   SourceForge
                 </a>
-                , and were updated on{" "}
-                <span className="evoxhighlight">
+                , and were updated on{' '}
+                <span className='evoxhighlight'>
                   {formatDate(dailyStatsData.stats_updated, true)}
                 </span>
-                , with a start date of{" "}
-                <span className="evoxhighlight">
+                , with a start date of{' '}
+                <span className='evoxhighlight'>
                   {formatDate(dailyStatsData.start_date, true)}
-                </span>{" "}
-                and an end date of{" "}
-                <span className="evoxhighlight">
+                </span>{' '}
+                and an end date of{' '}
+                <span className='evoxhighlight'>
                   {formatDate(dailyStatsData.end_date, true)}
                 </span>
                 .
                 <br />
-                <span className="italic text-gray-500">
+                <span className='italic text-gray-500'>
                   (All statistics are in UTC)
                 </span>
               </p>

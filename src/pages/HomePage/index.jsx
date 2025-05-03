@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
-import { BackgroundGradientAnimation } from "../../components/ui/background-gradient-animation.tsx"
-import { Meteors } from "../../components/ui/meteors.tsx"
-import evoloading from "../../assets/evoloading.gif"
-import evolution from "../../assets/evolution.svg"
-import { motion } from "framer-motion"
-import { ArrowOutwardIcon } from "../../components/ui/icons.tsx"
-import ScreenshotCarousel from "../../components/ScreenshotCarousel"
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { BackgroundGradientAnimation } from '../../components/ui/background-gradient-animation.tsx'
+import { Meteors } from '../../components/ui/meteors.tsx'
+import evoloading from '../../assets/evoloading.gif'
+import evolution from '../../assets/evolution.svg'
+import { motion } from 'framer-motion'
+import { ArrowOutwardIcon } from '../../components/ui/icons.tsx'
+import ScreenshotCarousel from '../../components/ScreenshotCarousel'
 
 const variants = {
   hidden: { opacity: 0, y: 75 },
@@ -20,14 +20,18 @@ const HomePage = () => {
     const fetchLatestAndroidVersion = async () => {
       try {
         const res = await fetch(
-          "https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/version/versions.json"
+          'https://raw.githubusercontent.com/AnierinBliss/www_gitres/refs/heads/main/version/versions.json'
         )
         const data = await res.json()
+        const latestVersionEntry = data?.find(
+          (versionEntry) => !versionEntry.branch.includes('vanilla')
+        )
 
-        if (data && Array.isArray(data) && data.length > 0) {
-          setLatestAndroidVersion(data[0].version)
-        }
-      } catch (error) {}
+        setLatestAndroidVersion(latestVersionEntry?.version || null)
+      } catch (error) {
+        console.error('Error fetching versions data:', error)
+        setLatestAndroidVersion(null)
+      }
     }
 
     fetchLatestAndroidVersion()
@@ -37,7 +41,7 @@ const HomePage = () => {
     return (
       <>
         <BackgroundGradientAnimation />
-        <img className="z-50 m-auto" src={evoloading} alt="Loading ..." />
+        <img className='z-50 m-auto' src={evoloading} alt='Loading ...' />
       </>
     )
   }
@@ -46,44 +50,44 @@ const HomePage = () => {
     <>
       <BackgroundGradientAnimation />
       <motion.div
-        className="TOP z-10 flex flex-col items-center justify-center space-y-6 font-[Prod-bold]"
+        className='TOP z-10 flex flex-col items-center justify-center space-y-6 font-[Prod-bold]'
         variants={variants}
-        initial="hidden"
-        animate="visible"
+        initial='hidden'
+        animate='visible'
         viewport={{ once: true }}
       >
-        <div className="inline-flex flex-col items-center text-4xl leading-tight sm:text-5xl lg:text-6xl">
+        <div className='inline-flex flex-col items-center text-4xl leading-tight sm:text-5xl lg:text-6xl'>
           <p>
-            <span className="evoxhighlight">Evolve</span> your
+            <span className='evoxhighlight'>Evolve</span> your
           </p>
           <p>Android device</p>
         </div>
-        <div className="inline-flex flex-col items-center text-center font-[Prod-light] text-lg leading-tight sm:text-xl lg:text-2xl">
+        <div className='inline-flex flex-col items-center text-center font-[Prod-light] text-lg leading-tight sm:text-xl lg:text-2xl'>
           <p>Pixel UI, Customization & more.</p>
           <p>
-            We are{" "}
+            We are{' '}
             <span>
-              <img className="h-7" src={evolution} alt="" />
+              <img className='h-7' src={evolution} alt='' />
             </span>
           </p>
         </div>
-        <div className="inline-flex flex-col items-center gap-2 pt-3 text-center sm:flex-row sm:gap-3 lg:flex-row lg:gap-6">
-          <Link to="/downloads">
+        <div className='inline-flex flex-col items-center gap-2 pt-3 text-center sm:flex-row sm:gap-3 lg:flex-row lg:gap-6'>
+          <Link to='/downloads'>
             <motion.div
               whileTap={{ scale: 0.95 }}
               initial={{ scale: 1 }}
-              className="homebutton"
+              className='homebutton'
             >
-              <div className="">Download ROM</div>
+              <div className=''>Download ROM</div>
             </motion.div>
           </Link>
-          <Link to="https://wiki.evolution-x.org/" target="_blank">
+          <Link to='https://wiki.evolution-x.org/' target='_blank'>
             <motion.div
               whileTap={{ scale: 0.95 }}
               initial={{ scale: 1 }}
-              className="homebutton"
+              className='homebutton'
             >
-              <div className="inline-flex items-center gap-2">
+              <div className='inline-flex items-center gap-2'>
                 Learn More <ArrowOutwardIcon />
               </div>
             </motion.div>
@@ -92,70 +96,70 @@ const HomePage = () => {
       </motion.div>
       <motion.div
         variants={variants}
-        initial="hidden"
-        animate="visible"
+        initial='hidden'
+        animate='visible'
         transition={{ delay: 0.1 }}
         viewport={{ once: true }}
-        className="MIDDLE z-40 inline-flex flex-col rounded-3xl px-8 pb-16 lg:px-16 lg:py-16"
+        className='MIDDLE z-40 inline-flex flex-col rounded-3xl px-8 pb-16 lg:px-16 lg:py-16'
       >
-        <div className="inline-flex flex-col gap-9">
-          <div className="middleshadow flex flex-col gap-10 rounded-3xl bg-black px-10 py-10 sm:flex-row lg:min-h-[28rem] lg:flex-row lg:gap-20 lg:px-16 lg:py-16 border-2 border-[#0060ff]">
-            <div className="space-y-5 sm:w-3/4 lg:space-y-10">
-              <p className="font-[Prod-bold] text-3xl lg:text-5xl">
-                <span className="evoxhighlight">About</span> Evolution X
+        <div className='inline-flex flex-col gap-9'>
+          <div className='middleshadow flex flex-col gap-10 rounded-3xl border-2 border-[#0060ff] bg-black px-10 py-10 sm:flex-row lg:min-h-[28rem] lg:flex-row lg:gap-20 lg:px-16 lg:py-16'>
+            <div className='space-y-5 sm:w-3/4 lg:space-y-10'>
+              <p className='font-[Prod-bold] text-3xl lg:text-5xl'>
+                <span className='evoxhighlight'>About</span> Evolution X
               </p>
-              <p className="text-xl lg:text-2xl">
+              <p className='text-xl lg:text-2xl'>
                 Evolution X aims to provide users with a Pixel-like feel at
                 first glance, with additional features at their disposal.
               </p>
               <div>
-                <p className="font-[Prod-normal] text-gray-400 lg:text-start lg:text-2xl">
+                <p className='font-[Prod-normal] text-gray-400 lg:text-start lg:text-2xl'>
                   Get Android {latestAndroidVersion} for your device now
                 </p>
-                <Link to={"downloads"}>
+                <Link to={'downloads'}>
                   <motion.div
                     whileTap={{ scale: 0.95 }}
                     initial={{ scale: 1 }}
-                    className="mt-2.5 w-full rounded-full bg-[#34A853] px-7 py-3 text-center text-xl text-white lg:w-fit hover:bg-[#2b8e47]"
+                    className='mt-2.5 w-full rounded-full bg-[#34A853] px-7 py-3 text-center text-xl text-white hover:bg-[#2b8e47] lg:w-fit'
                   >
                     Download
                   </motion.div>
                 </Link>
               </div>
             </div>
-            <div className="inline-flex flex-col items-center gap-6 lg:gap-12">
-              <p className="z-40 text-lg italic lg:text-xl evoxhighlight">
+            <div className='inline-flex flex-col items-center gap-6 lg:gap-12'>
+              <p className='evoxhighlight z-40 text-lg italic lg:text-xl'>
                 #KeepEvolving
               </p>
-              <div className="relative flex justify-center lg:w-60">
+              <div className='relative flex justify-center lg:w-60'>
                 <img
                   src={`https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/version/latestversion.svg`}
-                  alt=""
-                  className="z-40 size-[12rem] sm:size-[10rem] lg:size-[12rem]"
+                  alt=''
+                  className='z-40 size-[12rem] sm:size-[10rem] lg:size-[12rem]'
                 />
-                <Meteors number={25} className="hidden lg:block" />
+                <Meteors number={25} />
               </div>
             </div>
           </div>
-          <div className="inline-flex flex-col gap-9 sm:flex-row md:gap-12 lg:flex-row">
-            <div className="middleshadow items-start justify-start rounded-3xl bg-black px-8 py-10 sm:w-1/2 lg:px-12 lg:py-14 border-2 border-[#0060ff]">
-              <div className="flex flex-col items-start justify-start gap-5 lg:gap-10">
-                <div className="font-[Prod-bold] text-3xl capitalize lg:text-3xl">
+          <div className='inline-flex flex-col gap-9 sm:flex-row md:gap-12 lg:flex-row'>
+            <div className='middleshadow items-start justify-start rounded-3xl border-2 border-[#0060ff] bg-black px-8 py-10 sm:w-1/2 lg:px-12 lg:py-14'>
+              <div className='flex flex-col items-start justify-start gap-5 lg:gap-10'>
+                <div className='font-[Prod-bold] text-3xl capitalize lg:text-3xl'>
                   Frequent updates & latest security patches
                 </div>
-                <div className="text-xl lg:text-2xl">
+                <div className='text-xl lg:text-2xl'>
                   We provide frequent updates amongst most custom ROMs. These
                   updates aim to be in a stable state and are guaranteed to be
                   on the latest security patches.
                 </div>
               </div>
             </div>
-            <div className="middleshadow items-start justify-start rounded-3xl bg-black px-8 py-10 sm:w-1/2 lg:px-12 lg:py-14 border-2 border-[#0060ff]">
-              <div className="flex flex-col items-start justify-start gap-5 lg:gap-10">
-                <div className="font-[Prod-bold] text-3xl capitalize lg:text-3xl">
+            <div className='middleshadow items-start justify-start rounded-3xl border-2 border-[#0060ff] bg-black px-8 py-10 sm:w-1/2 lg:px-12 lg:py-14'>
+              <div className='flex flex-col items-start justify-start gap-5 lg:gap-10'>
+                <div className='font-[Prod-bold] text-3xl capitalize lg:text-3xl'>
                   Pixel look & feel
                 </div>
-                <div className="text-xl lg:text-2xl">
+                <div className='text-xl lg:text-2xl'>
                   Evolution X provides you with the perfect Pixel experience,
                   imitating Google Pixel devices, with additional
                   customizations.
@@ -165,7 +169,7 @@ const HomePage = () => {
           </div>
         </div>
       </motion.div>
-      <div className="screenshot-carousel-container">
+      <div className='screenshot-carousel-container'>
         <ScreenshotCarousel />
       </div>
     </>

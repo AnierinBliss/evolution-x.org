@@ -1,409 +1,343 @@
-import React, { useEffect, useState } from "react"
-import { useParams, Link } from "react-router-dom"
-import evoloading from "../../assets/evoloading.gif"
-import donateicon from "../../assets/donateicon.svg"
-import xdaicon from "../../assets/xdaicon.svg"
-import closeIcon from "../../assets/menuClose.svg"
-import Changelogs from "../Changelogs"
-import FlashingInstructions from "../FlashingInstructions"
-import { motion } from "framer-motion"
-import { ArrowOutwardIcon } from "../ui/icons.tsx"
+import React, { useEffect, useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import Device from '../../hooks/Device'
+import evoloading from '../../assets/evoloading.gif'
+import donateicon from '../../assets/donateicon.svg'
+import xdaicon from '../../assets/xdaicon.svg'
+import FlashingInstructions from '../FlashingInstructions'
+import Changelogs from '../Changelogs'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowOutwardIcon } from '../ui/icons.tsx'
+import UnmaintainedWarning from '../../components/UnmaintainedWarning'
+import ThermonuclearWarning from '../../components/ThermonuclearWarning'
+import evolution from '../../assets/evolution.svg'
+import DeviceNotFound from '../../components/DeviceNotFound'
 
-const variants = {
+const initialVariants = {
   hidden: { opacity: 0, y: 75 },
   visible: { opacity: 1, y: 0 }
 }
 
+const switchVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0 }
+}
+
 const DownloadSection = () => {
   const { codename } = useParams()
-  const [loading, setLoading] = useState(true)
-  const [data, setData] = useState(null)
-  const [downloads, setDownloads] = useState(null)
-  const [showInstructions, setShowInstructions] = useState(false)
-  const [showChangelogs, setShowChangelogs] = useState(false)
-  const [androidVersions, setAndroidVersions] = useState([])
-  const [supportedBranches, setSupportedBranches] = useState([])
-  const [currentBranch, setCurrentBranch] = useState("")
+  const { deviceData, loading, error } = Device(codename)
 
-  const toggleChangelog = () => setShowChangelogs((prev) => !prev)
-  const toggleInstructions = () => setShowInstructions((prev) => !prev)
+  const [currentBranch, setCurrentBranch] = useState(null)
+  const [showUnmaintainedWarning, setShowUnmaintainedWarning] = useState(false)
+  const [warningBuildInfo, setWarningBuildInfo] = useState(null)
+  const [showThermoWarning, setShowThermoWarning] = useState(false)
+  const [downloadUrl, setDownloadUrl] = useState(null)
+  const [isDeviceNotFound, setDeviceNotFound] = useState(false)
 
   useEffect(() => {
-    const fetchVersionsAndDevices = async () => {
-      try {
-        setLoading(true)
+    if (!deviceData?.branchesData?.length) return
 
-        const versionsResponse = await fetch(
-          "https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/version/versions.json"
-        )
-        const versionsData = await versionsResponse.json()
-        setAndroidVersions(versionsData)
-
-        const devicesResponse = await fetch(
-          "https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/devices/devices.json"
-        )
-        const devicesData = await devicesResponse.json()
-
-        const deviceEntry = devicesData.find(
-          (device) => device.device === codename
-        )
-        const branches = deviceEntry ? deviceEntry.branches : []
-        setSupportedBranches(branches)
-
-        if (branches.length > 0) {
-          const highestVersionBranch = versionsData
-            .sort(
-              (a, b) =>
-                parseInt(b.version.split("-")[0], 10) -
-                parseInt(a.version.split("-")[0], 10)
-            )
-            .flatMap((versionObj) =>
-              versionObj.branches.filter((branch) => branches.includes(branch))
-            )[0]
-
-          if (highestVersionBranch) {
-            setCurrentBranch(highestVersionBranch)
-          }
-        }
-
-        setLoading(false)
-      } catch (error) {
-        console.error("Error fetching versions or devices:", error)
-        setLoading(false)
-      }
-    }
-
-    fetchVersionsAndDevices()
-  }, [codename])
+    setCurrentBranch(
+      deviceData.branchesData
+        .filter((b) => !b.branch.toLowerCase().includes('vanilla'))
+        .sort((a, b) =>
+          b.version.localeCompare(a.version, undefined, { sensitivity: 'base' })
+        )[0]?.branch ?? deviceData.branchesData[0].branch
+    )
+  }, [deviceData])
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!currentBranch || !codename || androidVersions.length === 0) return
+    const hasSeenThermo = localStorage.getItem('hasSeenThermonuclearWarning')
+    setShowThermoWarning(!hasSeenThermo)
+  }, [])
 
-      setLoading(true)
-      setData(null)
-      setDownloads(null)
-
-      try {
-        const url = `https://raw.githubusercontent.com/Evolution-X/OTA/refs/heads/${currentBranch}/builds/${codename}.json`
-
-        const response = await fetch(url)
-        if (!response.ok) throw new Error("Device data fetch failed")
-        const json = await response.json()
-        const deviceData = json.response[0]
-        setData(deviceData)
-
-        const endDate = new Date().toISOString().split("T")[0]
-        const versionMatch = androidVersions.find((v) =>
-          v.branches.includes(currentBranch)
-        )
-        const androidVersion = versionMatch?.version
-
-        if (deviceData.filename) {
-          const versionPath = deviceData.filename.includes("Vanilla")
-            ? `${androidVersion}_vanilla`
-            : androidVersion
-          const statsUrl = `https://sourceforge.net/projects/evolution-x/files/${codename}/${versionPath}/${deviceData.filename}/stats/json?start_date=2019-03-19&end_date=2025-04-30&period=monthly`
-
-          const statsResponse = await fetch(statsUrl)
-          if (statsResponse.ok) {
-            const statsData = await statsResponse.json()
-            setDownloads(statsData?.summaries?.time?.downloads || 0)
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching device data or stats:", err)
-      }
-
-      setLoading(false)
+  useEffect(() => {
+    if (!loading && !deviceData && !error) {
+      setDeviceNotFound(true)
+    } else {
+      setDeviceNotFound(false)
     }
+  }, [loading, deviceData, error, codename])
 
-    fetchData()
-  }, [currentBranch, codename, androidVersions])
+  const handleCloseThermoWarning = (action) => {
+    setShowThermoWarning(false)
+    if (action === 'gotIt') {
+      localStorage.setItem('hasSeenThermonuclearWarning', 'true')
+    }
+  }
+
+  const handleUnmaintainedAcknowledge = () => {
+    if (downloadUrl) {
+      window.open(downloadUrl, '_blank')
+      setDownloadUrl(null)
+    }
+  }
+
+  const handleCloseUnmaintainedWarning = () => {
+    setShowUnmaintainedWarning(false)
+    setWarningBuildInfo(null)
+    setDownloadUrl(null)
+  }
+
+  const handleDownloadClick = (ota) => {
+    if (!ota.currently_maintained) {
+      const buildIdentifier = `${codename}-${ota.version}-${ota.filename}`
+      const acknowledged = localStorage.getItem('acknowledgedUnmaintained')
+      const acknowledgedBuilds = acknowledged ? JSON.parse(acknowledged) : {}
+
+      if (!acknowledgedBuilds[buildIdentifier]) {
+        setWarningBuildInfo({
+          codename,
+          version: ota.version,
+          build: ota.filename
+        })
+        setDownloadUrl(ota.download)
+        setShowUnmaintainedWarning(true)
+        return
+      }
+    }
+    window.open(ota.download, '_blank')
+  }
+
+  const currentBranchData = deviceData
+    ? deviceData.branchesData.find(
+        (branchData) => branchData.branch === currentBranch
+      )
+    : null
+
+  const currentOtas = currentBranchData?.ota || []
+
+  if (loading) {
+    return (
+      <div>
+        <img className='mx-auto' src={evoloading} alt='Loading ...' />
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div className='text-red-500'>Error: {error.message}</div>
+  }
+
+  if (isDeviceNotFound) {
+    return <DeviceNotFound codename={codename} />
+  }
 
   return (
     <>
-      {loading && (
-        <img
-          className="mx-auto my-auto w-4/5 lg:w-2/5"
-          src={evoloading}
-          alt="Loading ..."
-        />
-      )}
-      {!loading && (
-        <div className="mx-4 flex flex-col gap-6 sm:-mt-8 lg:-mb-20 lg:-mt-16">
-          {data ? (
-            <>
-              <motion.div
-                variants={variants}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: 0.2 }}
-                viewport={{ once: true }}
-                className="inline-flex flex-col rounded-2xl border-4 border-dashed border-[#ff5e00] px-8 py-6 lg:py-10"
-              >
-                <div className="flex flex-col gap-2 lg:gap-4">
-                  <p className="font-[Prod-bold] text-2xl lg:text-3xl text-[#ff5e00]">
-                    Before you download and install!
-                  </p>
-                  <p className="font-[Prod-light] text-lg lg:text-2xl">
-                    We are not responsible for bricked devices, dead SD cards,
-                    thermonuclear war, or the current economic crisis. Please do
-                    some research if you have any concerns about features
-                    included in this ROM before flashing it! YOU are choosing to
-                    make these modifications, and if you point your finger at us
-                    for messing up your device, we will{" "}
-                    <a
-                      href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="evoxhighlight font-[Prod-bold]"
-                    >
-                      laugh
-                    </a>{" "}
-                    at you.
-                  </p>
-                </div>
-              </motion.div>
-              <motion.div
-                variants={variants}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: 0.4 }}
-                viewport={{ once: true }}
-                className="inline-flex flex-wrap items-center justify-start gap-3"
-              >
-                {androidVersions
-                  .sort((versionA, versionB) => {
-                    const numA = parseInt(versionA.version.split("-")[0], 10)
-                    const numB = parseInt(versionB.version.split("-")[0], 10)
-                    return numA - numB
-                  })
-                  .map((versionObj) =>
-                    versionObj.branches.map((branch) => {
-                      const isVanilla = branch.includes("vanilla")
-                      const versionLabel = `${versionObj.version} ${isVanilla ? "VANILLA" : ""}`
+      <AnimatePresence>
+        {showThermoWarning && (
+          <ThermonuclearWarning onClose={handleCloseThermoWarning} />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showUnmaintainedWarning && warningBuildInfo && (
+          <UnmaintainedWarning
+            onClose={handleCloseUnmaintainedWarning}
+            buildInfo={warningBuildInfo}
+            onAcknowledge={handleUnmaintainedAcknowledge}
+          />
+        )}
+      </AnimatePresence>
+      {deviceData &&
+      deviceData.branchesData &&
+      deviceData.branchesData.length > 0 ? (
+        <motion.div
+          variants={initialVariants}
+          initial='hidden'
+          animate='visible'
+          className='mx-4 flex flex-col items-center justify-center gap-10 md:gap-20 lg:mx-16 xl:mx-auto xl:w-[80rem]'
+        >
+          <div className='inline-flex flex-col items-baseline gap-2 text-center font-[Prod-bold] text-4xl sm:flex-row sm:text-5xl lg:gap-4 lg:text-6xl'>
+            <img className='h-7 sm:h-10 lg:h-12' src={evolution} alt='Logo' />
+            <span className='evoxhighlight'>{codename}</span>
+          </div>
+          <div className='flex w-full flex-col gap-4 sm:-mt-8 lg:-mb-20 lg:-mt-16'>
+            <div className='inline-flex flex-wrap items-center justify-start gap-2 lg:gap-3'>
+              {deviceData.branchesData.map((branchData) => {
+                const versionLabel = branchData.version.replace(/_/g, ' ')
 
-                      return (
-                        supportedBranches.includes(branch) && (
-                          <button
-                            key={branch}
-                            className={`buttonSelect ${currentBranch === branch ? "bg-[#0060ff]" : ""}`}
-                            onClick={() => setCurrentBranch(branch)}
-                          >
-                            {versionLabel}
-                          </button>
-                        )
-                      )
-                    })
-                  )}
-              </motion.div>
-              <motion.div
-                variants={variants}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: 0.4 }}
-                viewport={{ once: true }}
-                className="flex flex-col gap-10 rounded-2xl bg-[#060505] p-6 md:flex-row lg:gap-16 lg:p-11 border-2 border-[#0060ff]"
-              >
-                <div className="mt-6 flex flex-col gap-4">
-                  <img
-                    className="max-h-72 min-h-64 object-contain"
-                    src={`https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/devices/images/${codename}.webp`}
-                    alt="Device"
-                  />
-                  <div className="flex flex-wrap justify-center gap-4 sm:flex-row md:flex-col lg:justify-normal lg:pl-2">
-                    <span>
-                      <p className="text-lg evoxhighlight">Device</p>
-                      <p className="w-auto text-2xl md:w-[15rem]">
-                        {data.oem} {data.device}
-                      </p>
-                    </span>
-                    <span>
-                      <p className="text-lg evoxhighlight">Codename</p>
-                      <p className="text-2xl">{codename}</p>
-                    </span>
-                    <span>
-                      <p className="text-lg evoxhighlight">Version</p>
-                      <p className="text-2xl">{data.version}</p>
-                    </span>
-                  </div>
-                </div>
-                <div className="flex grow flex-col rounded-2xl bg-[#151414] px-6 py-7 border-2 border-[#0060ff] middleshadow">
-                  <div className="flex grow flex-col gap-4 lg:justify-between lg:gap-0">
-                    <div className="flex flex-wrap gap-4 pl-2 lg:flex-row lg:gap-0">
-                      <div className="grow">
-                        <div className="text-lg evoxhighlight">Date</div>
-                        <div className="text-2xl text-white">
-                          {new Date(data.timestamp * 1000).toDateString()}
-                        </div>
-                      </div>
-                      <div className="grow">
-                        <div className="text-lg evoxhighlight">Type</div>
-                        <div className="text-2xl text-white">
-                          {data.buildtype}
-                        </div>
-                      </div>
-                      <div className="grow">
-                        <div className="text-lg evoxhighlight">Size</div>
-                        <div className="text-2xl text-white">
-                          {(data.size / 1024 / 1024 / 1024).toFixed(2)} GB
-                        </div>
-                      </div>
-                      <div className="grow">
-                        <div className="text-lg evoxhighlight">
-                          Download Count
-                        </div>
-                        <div className="text-2xl text-white">
-                          {downloads !== null ? downloads : "N/A"}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="inline-flex flex-col items-center justify-between gap-4 rounded-2xl bg-[#212121] px-8 py-5 lg:flex-row border-2 border-[#0060ff]">
-                      <div className="flex items-center justify-center gap-4 lg:gap-9">
-                        <div className="flex size-20 shrink-0 items-center justify-center lg:size-40">
-                          <img
-                            className="rounded-full"
-                            src={`https://avatars.githubusercontent.com/${data.github}`}
-                            alt="avatar"
-                          />
-                        </div>
-                        <div className="lg:max-w-90 text-wrap font-[Prod-Medium] text-2xl text-white sm:max-w-56 lg:text-3xl xl:max-w-fit">
-                          {data.maintainer}
-                        </div>
-                      </div>
-                      <div className="flex gap-10">
-                        <div className="flex grow items-center justify-center gap-4 lg:flex-col xl:flex-row">
-                          <Link to={data.paypal} target="_blank">
-                            <img
-                              src={donateicon}
-                              alt="donateicon"
-                              className="size-12 lg:size-14"
-                            />
-                          </Link>
-                          <Link to={data.forum} target="_blank">
-                            <img
-                              src={xdaicon}
-                              alt="xda"
-                              className="size-12 lg:size-14"
-                            />
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-4 text-xl lg:text-2xl">
-                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                        <div>
-                          <button
-                            onClick={() => toggleInstructions()}
-                            className="h-16 w-full rounded-full border-4 border-[#0060ff] bg-transparent px-4"
-                          >
-                            Flashing Instructions
-                          </button>
-                          {showInstructions && (
-                            <div
-                              onClick={(e) => {
-                                if (e.target === e.currentTarget) {
-                                  setShowInstructions(false)
-                                }
-                              }}
-                              className="fixed inset-0 z-50 flex flex-col py-[6rem] backdrop-blur-sm md:py-[6rem] lg:py-[6rem] xl:px-[4rem] 2xl:px-[15rem]"
-                            >
-                              <span
-                                onClick={() => setShowInstructions(false)}
-                                className="absolute p-2 bg-[#0060ff] rounded-full border-4 border-[#0060ff] right-6 top-6 z-50 cursor-pointer"
-                              >
-                                <img src={closeIcon} alt="close" />
-                              </span>
-                              <div className="relative mx-[2rem] grow overflow-y-scroll rounded-3xl bg-stone-800 px-10 outline-dashed outline-2 outline-[#0060ff] lg:pt-[1rem]">
-                                <FlashingInstructions
-                                  codename={codename}
-                                  branch={currentBranch}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <button
-                            onClick={() => toggleChangelog()}
-                            className="h-16 w-full rounded-full border-4 border-[#0060ff] bg-transparent px-4"
-                          >
-                            Changelog
-                          </button>
-                          {showChangelogs && (
-                            <div
-                              onClick={(e) => {
-                                if (e.target === e.currentTarget) {
-                                  setShowChangelogs(false)
-                                }
-                              }}
-                              className="fixed inset-0 z-50 flex flex-col py-[6rem] backdrop-blur-sm md:py-[6rem] lg:py-[6rem] xl:px-[4rem] 2xl:px-[15rem]"
-                            >
-                              <span
-                                onClick={() => setShowChangelogs(false)}
-                                className="absolute p-2 bg-[#0060ff] rounded-full border-4 border-[#0060ff] right-6 top-6 z-50 cursor-pointer"
-                              >
-                                <img src={closeIcon} alt="close" />
-                              </span>
-                              <div className="relative mx-[2rem] grow overflow-y-scroll rounded-3xl bg-stone-800 px-10 outline-dashed outline-2 outline-[#0060ff] lg:pt-[1rem]">
-                                <Changelogs
-                                  codename={codename}
-                                  branch={currentBranch}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex w-full flex-col gap-4 lg:flex-row lg:gap-4">
-                        <Link
-                          to={data.download}
-                          target="_blank"
-                          className="inline-flex h-16 grow items-center justify-center gap-4 rounded-full bg-[#0060ff] text-white lg:w-1/2"
-                        >
-                          <p>Download</p> <ArrowOutwardIcon />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-              {data.currently_maintained === false && (
+                return (
+                  <button
+                    key={branchData.branch}
+                    className={`buttonSelect ${
+                      currentBranch === branchData.branch ? 'bg-[#0060ff]' : ''
+                    }`}
+                    onClick={() => setCurrentBranch(branchData.branch)}
+                  >
+                    {versionLabel}
+                  </button>
+                )
+              })}
+            </div>
+
+            {currentOtas.length > 0 &&
+              currentOtas.map((ota) => (
                 <motion.div
-                  variants={variants}
-                  initial="hidden"
-                  animate="visible"
-                  transition={{ delay: 0.6 }}
-                  viewport={{ once: true }}
-                  className="inline-flex flex-col rounded-2xl border-4 border-dashed border-red-600 px-8 py-6 lg:py-10"
+                  key={ota.filename}
+                  className='flex flex-col items-center justify-center gap-6 rounded-2xl border-2 border-[#0060ff] bg-[#060505] p-4 md:flex-row lg:gap-16 lg:p-11'
                 >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-[Prod-bold] text-2xl lg:text-3xl text-red-700">
-                        This version is no longer maintained!
-                      </p>
-                      <p className="font-[Prod-light] text-lg lg:text-2xl">
-                        You may not receive future updates or bug fixes while on
-                        this version of the ROM. We recommend using a version
-                        that is currently{" "}
-                        <span className="evoxhighlight font-[Prod-bold]">
-                          maintained
-                        </span>{" "}
-                        for continued support.
-                      </p>
+                  <div className='mt-4 flex flex-col gap-4 md:w-1/4 lg:w-1/4 lg:flex-shrink-0'>
+                    <img
+                      className='max-h-56 min-h-48 w-full object-contain'
+                      src={`https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/devices/images/${codename}.webp`}
+                      alt='Device'
+                    />
+                    <div className='gap-4 text-center'>
+                      <span>
+                        <p className='text-2xl'>
+                          {ota.oem} {ota.device}
+                        </p>
+                        <p className='evoxhighlight text-lg'>({codename})</p>
+                      </span>
                     </div>
                   </div>
+                  <AnimatePresence mode='wait'>
+                    <motion.div
+                      key={currentBranch}
+                      variants={switchVariants}
+                      initial='hidden'
+                      animate='visible'
+                      exit='exit'
+                      transition={{ duration: 0.3 }}
+                      className='middleshadow flex grow flex-col gap-4 rounded-2xl border-2 border-[#0060ff] bg-[#151414] px-4 py-5 md:w-2/3 lg:w-2/3 lg:justify-between lg:gap-0'
+                    >
+                      <div className='flex grow flex-col gap-4 lg:justify-between lg:gap-0'>
+                        <div className='grid grid-cols-2 gap-2 pb-4 pl-2 lg:grid-cols-3 lg:gap-6'>
+                          <div className='grow'>
+                            <div className='evoxhighlight text-base'>
+                              Android Version
+                            </div>
+                            <div className='text-2xl text-white'>
+                              {currentBranchData?.version}
+                            </div>
+                          </div>
+
+                          <div className='grow'>
+                            <div className='evoxhighlight text-base'>
+                              Evolution X Version
+                            </div>
+                            <div className='text-2xl text-white'>
+                              {ota.version}
+                            </div>
+                          </div>
+
+                          <div className='grow'>
+                            <div className='evoxhighlight text-base'>Date</div>
+                            <div className='text-2xl text-white'>
+                              {new Date(ota.timestamp * 1000).toDateString()}
+                            </div>
+                          </div>
+                          <div className='grow'>
+                            <div className='evoxhighlight text-base'>Type</div>
+                            <div className='text-2xl text-white'>
+                              {ota.buildtype}
+                            </div>
+                          </div>
+                          <div className='grow'>
+                            <div className='evoxhighlight text-base'>Size</div>
+                            <div className='text-2xl text-white'>
+                              {(ota.size / 1024 / 1024 / 1024).toFixed(2)} GB
+                            </div>
+                          </div>
+                          <div className='grow'>
+                            <div className='evoxhighlight text-base'>
+                              Download Count
+                            </div>
+                            <div className='text-2xl text-white'>
+                              {deviceData?.branchesData.find(
+                                (b) => b.branch === currentBranch
+                              )?.downloads?.[ota.filename] || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className='mb-4 flex items-center justify-between gap-4 rounded-2xl border-2 border-[#0060ff] bg-[#212121] px-4 py-3 lg:gap-9'>
+                          <div className='flex items-center justify-start gap-2'>
+                            <div className='flex size-12 shrink-0 items-center justify-center lg:size-16'>
+                              <img
+                                className='rounded-full'
+                                src={`https://avatars.githubusercontent.com/${ota.github}`}
+                                alt='avatar'
+                              />
+                            </div>
+                            <div className='lg:max-w-90 max-w-48 text-wrap font-[Prod-Medium] text-lg text-white lg:text-xl xl:max-w-fit'>
+                              {ota.maintainer}
+                            </div>
+                          </div>
+                          <div className='flex gap-2'>
+                            {ota.paypal && (
+                              <Link to={ota.paypal} target='_blank'>
+                                <img
+                                  src={donateicon}
+                                  alt='donateicon'
+                                  className='size-8 lg:size-10'
+                                />
+                              </Link>
+                            )}
+                            {ota.forum && (
+                              <Link to={ota.forum} target='_blank'>
+                                <img
+                                  src={xdaicon}
+                                  alt='xda'
+                                  className='size-8 lg:size-10'
+                                />
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                        <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
+                          <FlashingInstructions
+                            codename={codename}
+                            branch={currentBranch}
+                          />
+                          <Changelogs
+                            codename={codename}
+                            branch={currentBranch}
+                          />
+                          <button
+                            onClick={() => handleDownloadClick(ota)}
+                            className='inline-flex h-16 items-center justify-center gap-2 rounded-full bg-[#0060ff] text-2xl text-white hover:bg-[#004bb5] lg:hidden'
+                          >
+                            <p>Download</p>
+                            <ArrowOutwardIcon className='size-4 lg:size-6' />
+                          </button>
+                        </div>
+                        <div className='flex w-full flex-col gap-3 py-2 lg:flex-row lg:gap-4'>
+                          <button
+                            onClick={() => handleDownloadClick(ota)}
+                            className='hidden h-16 grow items-center justify-center gap-2 rounded-full bg-[#0060ff] text-2xl text-white hover:bg-[#004bb5] lg:inline-flex lg:h-16 lg:w-1/2'
+                          >
+                            <p>Download</p>
+                            <ArrowOutwardIcon className='size-4 lg:size-6' />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            {currentOtas.length === 0 &&
+              deviceData.branchesData.some(
+                (branchData) =>
+                  branchData.branch === currentBranch &&
+                  branchData.ota &&
+                  branchData.ota.length === 0
+              ) && (
+                <motion.div
+                  variants={initialVariants}
+                  initial='hidden'
+                  animate='visible'
+                  exit='exit'
+                  transition={{ duration: 0.3 }}
+                  className='flex rounded-2xl bg-[#060505] p-6 ring ring-gray-400/5 ring-offset-2 ring-offset-gray-400/5 lg:gap-16 lg:p-11'
+                >
+                  No OTA data available for the selected branch.
                 </motion.div>
               )}
-            </>
-          ) : (
-            <div className="flex rounded-2xl bg-[#060505] p-6 ring ring-gray-400/5 ring-offset-2 ring-offset-gray-400/5 lg:gap-16 lg:p-11">
-              No data available for this device.
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        </motion.div>
+      ) : null}
     </>
   )
 }

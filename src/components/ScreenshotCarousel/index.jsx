@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from "react"
-import { Swiper, SwiperSlide } from "swiper/react"
-import { EffectCoverflow, Pagination } from "swiper/modules"
-import "swiper/css"
-import "swiper/css/effect-coverflow"
-import "swiper/css/pagination"
+import React, { useEffect, useState, useRef } from 'react'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { EffectCoverflow, Pagination } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/effect-coverflow'
+import 'swiper/css/pagination'
 
 const ScreenshotCarousel = () => {
   const [preloadedImages, setPreloadedImages] = useState([])
@@ -13,7 +13,7 @@ const ScreenshotCarousel = () => {
     const fetchScreenshots = async () => {
       try {
         const response = await fetch(
-          "https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/screenshots/screenshots.json"
+          'https://raw.githubusercontent.com/Evolution-X/www_gitres/refs/heads/main/screenshots/screenshots.json'
         )
         const data = await response.json()
 
@@ -34,7 +34,7 @@ const ScreenshotCarousel = () => {
         const loadedImages = await Promise.all(imagePromises)
         setPreloadedImages(loadedImages)
       } catch (error) {
-        console.error("Error fetching screenshots:", error)
+        console.error('Error fetching screenshots:', error)
       }
     }
     fetchScreenshots()
@@ -47,11 +47,11 @@ const ScreenshotCarousel = () => {
   }, [preloadedImages])
 
   return (
-    <section id="screenshots" className="scroll-margin py-12 text-center">
-      <div className="flex justify-center flex-col items-center">
+    <section id='screenshots' className='scroll-margin py-12 text-center'>
+      <div className='flex flex-col items-center justify-center'>
         <Swiper
           ref={swiperRef}
-          effect="coverflow"
+          effect='coverflow'
           grabCursor={true}
           centeredSlides={true}
           slidesPerView={2}
@@ -63,26 +63,29 @@ const ScreenshotCarousel = () => {
             stretch: 0,
             depth: 300,
             modifier: 2,
-            slideShadows: true,
+            slideShadows: true
           }}
-          pagination={{ clickable: true, el: ".custom-pagination" }}
+          pagination={{ clickable: true, el: '.custom-pagination' }}
           modules={[EffectCoverflow, Pagination]}
-          className="w-full max-w-2xl"
+          className='w-full max-w-2xl'
         >
           {preloadedImages.map((url, index) => (
-            <SwiperSlide key={index} className="relative w-48 h-auto transition-transform">
-              <div className="relative">
+            <SwiperSlide
+              key={index}
+              className='relative h-auto w-48 transition-transform'
+            >
+              <div className='relative'>
                 <img
                   src={url}
                   alt={`Screenshot ${index + 1}`}
-                  className="rounded-lg shadow-lg object-cover transition-all duration-300 swiper-slide-img"
+                  className='swiper-slide-img rounded-lg object-cover shadow-lg transition-all duration-300'
                 />
-                <div className="absolute inset-0 bg-[#0060ff] opacity-30 mix-blend-lighten transition-opacity duration-300 hidden swiper-slide-overlay"></div>
+                <div className='swiper-slide-overlay absolute inset-0 hidden bg-[#0060ff] opacity-30 mix-blend-lighten transition-opacity duration-300'></div>
               </div>
             </SwiperSlide>
           ))}
         </Swiper>
-        <div className="custom-pagination mt-6"></div>
+        <div className='custom-pagination mt-6'></div>
       </div>
 
       <style>
